@@ -4,7 +4,7 @@
 #	Start a game-server in the background using GNU "Screen" utility
 #	============================================================================
 #	Created:       2024-03-06, by Weasel.SteamID.155@gMail.com        
-#	Last modified: 2024-03-23, by Weasel.SteamID.155@gMail.com
+#	Last modified: 2024-04-05, by Weasel.SteamID.155@gMail.com
 #	----------------------------------------------------------------------------
 #
 #	Purpose:
@@ -50,6 +50,7 @@ fi;
 #
 INSTALL_FOLDER="$HOME/$GAME_SERVER";
 SCRIPT_LOG_FILE="$HOME/logs/$GAME_SERVER.log";
+SCREEN_LOG_FILE="$HOME/logs/$GAME_SERVER-screen.log";
 SCRIPTS_FOLDER="$HOME/scripts";
 STOP_SCRIPT="$SCRIPTS_FOLDER/stop/stop-$GAME_SERVER.sh";
 RUN_SCRIPT="$SCRIPTS_FOLDER/run/run-$GAME_SERVER.sh";
@@ -64,6 +65,8 @@ echo "Install folder: $INSTALL_FOLDER";
 echo "Install folder: $INSTALL_FOLDER" >> "$SCRIPT_LOG_FILE";
 echo "Script log file: $SCRIPT_LOG_FILE";
 echo "Script log file: $SCRIPT_LOG_FILE" >> "$SCRIPT_LOG_FILE";
+echo "Screen log file: $SCREEN_LOG_FILE";
+echo "Screen log file: $SCREEN_LOG_FILE" >> "$SCRIPT_LOG_FILE";
 echo "Stop script: $STOP_SCRIPT";
 echo "Stop script: $STOP_SCRIPT" >> "$SCRIPT_LOG_FILE";
 echo "Run script: $RUN_SCRIPT";
@@ -88,7 +91,7 @@ $STOP_SCRIPT;
 #
 echo "Starting game with the 'screen' utility ... ";
 echo "Starting game with the 'screen' utility ... " >> "$SCRIPT_LOG_FILE";
-screen -A -m -d -S $GAME_SERVER $RUN_SCRIPT;
+screen -L -Logfile "$SCREEN_LOG_FILE" -A -m -d -S $GAME_SERVER $RUN_SCRIPT;
 #
 #	Display 'screen' processes ...
 #
