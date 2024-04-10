@@ -14,7 +14,7 @@ This includes things such as:
  * Stopping the disconnected / back-ground processes of the game-servers.
  * Manually updating the game-servers if needed.
  * Checking for updates available for the game-servers, and conditionally updating the game-servers, restarting them only if an update is needed.
- * Monitoring game-servers running under GNU screen for fatal errors, and automatidcally restarting if needed.
+ * Monitoring game-servers running under GNU screen for fatal errors, and automatically restarting - only if needed.
  * Making backups of the game-servers.
  * Generating lists of "stock" content to exclude from backups.
 
