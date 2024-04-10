@@ -1,0 +1,11 @@
+gameserverid1/gamesubfolderhere/addons
+gameserverid1/gamesubfolderhere/map/custommap1.bsp
+gameserverid1/gamesubfolderhere/map/custommap2.bsp
+gameserverid1/gamesubfolderhere/map/custommap3.bsp
+gameserverid1/gamesubfolderhere/sound/customsound1.wav
+gameserverid1/gamesubfolderhere/sound/customsound2.wav
+gameserverid1/gamesubfolderhere/sound/custommusic1.mp3
+gameserverid1/gamesubfolderhere/sound/custommusic2.mp3
+*.cfg
+*.txt
+*.ini
