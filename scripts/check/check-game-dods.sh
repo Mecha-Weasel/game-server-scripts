@@ -4,7 +4,7 @@
 #	Conditionally update a Day of Defeat:Source (DoDS) game-server
 #	============================================================================
 #	Created:       2024-03-08, by Weasel.SteamID.155@gMail.com        
-#	Last modified: 2024-03-23, by Weasel.SteamID.155@gMail.com
+#	Last modified: 2024-04-11, by Weasel.SteamID.155@gMail.com
 #	----------------------------------------------------------------------------
 #
 #	Purpose:
@@ -47,7 +47,8 @@ fi;
 #	Define some additional variables ...
 #
 GAME_SUB_FOLDER="dod";
-SERVER_APPID="232290";
+#SERVER_APPID="232290";
+SERVER_APPID="300";
 STEAM_INF_FOLDER="$HOME/$GAME_SERVER/$GAME_SUB_FOLDER";
 UPDATE_SCRIPT="$HOME/scripts/update/update-$GAME_SERVER.sh";
 SCRIPT_LOG_FILE="$HOME/logs/$GAME_SERVER.log";

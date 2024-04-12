@@ -47,7 +47,8 @@ fi;
 #	Define some additional variables ...
 #
 GAME_SUB_FOLDER="cstrike";
-SERVER_APPID="232330";
+SERVER_APPID="240";
+#SERVER_APPID="232330";
 STEAM_INF_FOLDER="$HOME/$GAME_SERVER/$GAME_SUB_FOLDER";
 UPDATE_SCRIPT="$HOME/scripts/update/update-$GAME_SERVER.sh";
 SCRIPT_LOG_FILE="$HOME/logs/$GAME_SERVER.log";

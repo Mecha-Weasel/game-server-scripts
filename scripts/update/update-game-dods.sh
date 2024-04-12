@@ -1,10 +1,10 @@
 #!/bin/bash
 #
 #	----------------------------------------------------------------------------
-#	Update a Day of Defeat:Source (DoDS) game-server
+#	Update a Day of Defeat:Source (DoDS) game-server, restarting if needed
 #	============================================================================
 #	Created:       2024-03-07, by Weasel.SteamID.155@gMail.com        
-#	Last modified: 2024-03-23, by Weasel.SteamID.155@gMail.com
+#	Last modified: 2024-04-11, by Weasel.SteamID.155@gMail.com
 #	----------------------------------------------------------------------------
 #
 #	Purpose:
@@ -34,14 +34,14 @@ GAME_SERVER=$(echo $GAME_SERVER_TEMP | tr -cd [0-9a-z]-);
 #
 if [ "$GAME_SERVER" != "$GAME_SERVER_TEMP" ]; then
 	echo "ERROR: Only lower-case alpha-numeric charaters permitted in parameter: gameserverid";
-    exit 1;
+	exit 1;
 fi;
 #
 #	Check that GAME_SERVER has been provided ...
 #
 if ! [[ $GAME_SERVER ]]; then
 	echo "ERROR: Missing parameter: gameserverid";
-    exit 1;
+	exit 1;
 fi;
 #
 #	Define some additional variables ...
@@ -49,17 +49,17 @@ fi;
 #		Various stuff, specific to
 #		this game-server type ...
 #
-MOD_SUB_FOLDER="dod";												# which sub-folder of the installation folder the game shows-up inside of.
+MOD_SUB_FOLDER="dod";													# which sub-folder of the installation folder the game shows-up inside of.
 SCRIPTS_FOLDER="$HOME/scripts";											# base folder where various related scripts are located.
 INSTALL_FOLDER="$HOME/$GAME_SERVER";									# folder where game-server will be installed.
 BASE_FOLDER="$INSTALL_FOLDER/$MOD_SUB_FOLDER";							# folder where target mod will be located.
-STOP_SCRIPT="$SCRIPTS_FOLDER/stop/stop-$GAME_SERVER.sh";					# script to stop existing game-server instance.
-INSTALL_SCRIPT="$SCRIPTS_FOLDER/install/install-$GAME_SERVER.sh";			# script to install/update game-server content.
-START_SCRIPT="$SCRIPTS_FOLDER/start/start-$GAME_SERVER.sh";					# script to restart game-server instance.
+STOP_SCRIPT="$SCRIPTS_FOLDER/stop/stop-$GAME_SERVER.sh";				# script to stop existing game-server instance.
+INSTALL_SCRIPT="$SCRIPTS_FOLDER/install/install-$GAME_SERVER.sh";		# script to install/update game-server content.
+START_SCRIPT="$SCRIPTS_FOLDER/start/start-$GAME_SERVER.sh";				# script to restart game-server instance.
 SCRIPT_LOG_FILE="$HOME/logs/$GAME_SERVER.log";
 CHECK_CONTROL_FILE="$BASE_FOLDER/update-in-progress.txt";
-SHUTDOWN_ALERT_DISPLAY_COMMAND="sm_say ALERT: Server restaring shortly for an update!$(printf \\r)";
-SHUTDOWN_ALERT_PLAY_COMMAND="sm_play @humans sound/weaselslair/alerts/alert-update-game.mp3$(printf \\r)";
+SHUTDOWN_ALERT_DISPLAY_COMMAND="amx_say ALERT: Server restaring shortly for an update!$(printf \\r)";
+SHUTDOWN_ALERT_PLAY_COMMAND="amx_sound_play sound/weaselslair/alerts/alert-update-game.mp3$(printf \\r)";
 #
 #	Display start of stuff ...
 #
@@ -86,87 +86,107 @@ if [ -e "$CHECK_CONTROL_FILE" ]; then
 		#	is already an update in progress ...
 		#
 		echo "ERROR: Game install/update already in progress. Aborting this update attempt.";
+		echo "ERROR: Game install/update already in progress. Aborting this update attempt." >> "$SCRIPT_LOG_FILE";
 	else
 		#
-		#	Build a temporary text file
-		#	(update-in-progress.txt) used
-		#	for update-check control ...
+		#	Check if related screen process is even running ...
+		#
+		SCREEN_LIST_CAPTURE=$(screen -ls | grep $GAME_SERVER);
+		if [[ $SCREEN_LIST_CAPTURE == *"$GAME_SERVER"* ]]; then
+			SCREEN_RUNNING_CHECK=true;
+		else
+			SCREEN_RUNNING_CHECK=false;
+		fi;
 		#
 		#	Display and log various information ...
 		#
 		echo "Game-server install/update attempt ...";
-        echo "Game-server install/update attempt ..." >> "$SCRIPT_LOG_FILE";
+		echo "Game-server install/update attempt ..." >> "$SCRIPT_LOG_FILE";
 		echo "Information being used to attempt this update ... ";
-        echo "Information being used to attempt this update ... " >> "$SCRIPT_LOG_FILE";
-        echo "";
-        echo "" >> "$SCRIPT_LOG_FILE";
-        echo "Information:                     Value:";
-        echo "Information:                     Value:" >> "$SCRIPT_LOG_FILE";
-        echo "-----------                      -----";
-        echo "-----------                      -----" >> "$SCRIPT_LOG_FILE";
+		echo "Information being used to attempt this update ... " >> "$SCRIPT_LOG_FILE";
+		echo "";
+		echo "" >> "$SCRIPT_LOG_FILE";
+		echo "Information:                     Value:";
+		echo "Information:                     Value:" >> "$SCRIPT_LOG_FILE";
+		echo "-----------                      -----";
+		echo "-----------                      -----" >> "$SCRIPT_LOG_FILE";
 		echo "Date-Time Mark:                  $(date)";
-        echo "Date-Time Mark:                  $(date)" >> "$SCRIPT_LOG_FILE";
+		echo "Date-Time Mark:                  $(date)" >> "$SCRIPT_LOG_FILE";
 		echo "Game-server this is for:         $GAME_SERVER";
-        echo "Game-server this is for:         $GAME_SERVER" >> "$SCRIPT_LOG_FILE";
+		echo "Game-server this is for:         $GAME_SERVER" >> "$SCRIPT_LOG_FILE";
 		echo "Sub-folder where game is:        $MOD_SUB_FOLDER";
-        echo "Sub-folder where game is:        $MOD_SUB_FOLDER" >> "$SCRIPT_LOG_FILE";
+		echo "Sub-folder where game is:        $MOD_SUB_FOLDER" >> "$SCRIPT_LOG_FILE";
 		echo "Folder where scripts are:        $SCRIPTS_FOLDER";
-        echo "Folder where scripts are:        $SCRIPTS_FOLDER" >> "$SCRIPT_LOG_FILE";
+		echo "Folder where scripts are:        $SCRIPTS_FOLDER" >> "$SCRIPT_LOG_FILE";
 		echo "Base folder where game is:       $BASE_FOLDER";
-        echo "Base folder where game is:       $BASE_FOLDER" >> "$SCRIPT_LOG_FILE";
-        echo "Log file for this update:        $SCRIPT_LOG_FILE";
-        echo "Log file for this update:        $SCRIPT_LOG_FILE" >> "$SCRIPT_LOG_FILE";
-        echo "Alert display-text command:      $SHUTDOWN_ALERT_DISPLAY_COMMAND";
-        echo "Alert display-text command:      $SHUTDOWN_ALERT_DISPLAY_COMMAND" >> "$SCRIPT_LOG_FILE";
-        echo "Alert play-audio command:        $SHUTDOWN_ALERT_PLAY_COMMAND";
-        echo "Alert play-audio command:        $SHUTDOWN_ALERT_PLAY_COMMAND" >> "$SCRIPT_LOG_FILE";
-        echo "Server stop script:              $STOP_SCRIPT";
-        echo "Server stop script:              $STOP_SCRIPT" >> "$SCRIPT_LOG_FILE";
-        echo "Server install script:           $INSTALL_SCRIPT";
-        echo "Server install script:           $INSTALL_SCRIPT" >> "$SCRIPT_LOG_FILE";
-        echo "Server start script:             $START_SCRIPT";
-        echo "Server start script:             $START_SCRIPT" >> "$SCRIPT_LOG_FILE";
+		echo "Base folder where game is:       $BASE_FOLDER" >> "$SCRIPT_LOG_FILE";
+		echo "Log file for this update:        $SCRIPT_LOG_FILE";
+		echo "Log file for this update:        $SCRIPT_LOG_FILE" >> "$SCRIPT_LOG_FILE";
+		echo "Alert display-text command:      $SHUTDOWN_ALERT_DISPLAY_COMMAND";
+		echo "Alert display-text command:      $SHUTDOWN_ALERT_DISPLAY_COMMAND" >> "$SCRIPT_LOG_FILE";
+		echo "Alert play-audio command:        $SHUTDOWN_ALERT_PLAY_COMMAND";
+		echo "Alert play-audio command:        $SHUTDOWN_ALERT_PLAY_COMMAND" >> "$SCRIPT_LOG_FILE";
+		echo "Server stop script:              $STOP_SCRIPT";
+		echo "Server stop script:              $STOP_SCRIPT" >> "$SCRIPT_LOG_FILE";
+		echo "Server install script:           $INSTALL_SCRIPT";
+		echo "Server install script:           $INSTALL_SCRIPT" >> "$SCRIPT_LOG_FILE";
+		echo "Server start script:             $START_SCRIPT";
+		echo "Server start script:             $START_SCRIPT" >> "$SCRIPT_LOG_FILE";
+		echo "Capture & search of screen list: $SCREEN_LIST_CAPTURE";
+		echo "Capture & search of screen list: $SCREEN_LIST_CAPTURE" >> "$SCRIPT_LOG_FILE";
+		echo "Related screen session running?: $SCREEN_RUNNING_CHECK";
+		echo "Related screen session running?: $SCREEN_RUNNING_CHECK" >> "$SCRIPT_LOG_FILE";
 		#
-		#	Displaying an in-game notification,
-		#	and an audible in-game alert ...
+		#	ONLY if the related screen process is/was already running, ...
 		#
-		echo "Displaying in-game notification,";
-		echo "Displaying in-game notification," >> "$SCRIPT_LOG_FILE";
-		echo "and playing audible alert ...";
-		echo "and playing audible alert ..." >> "$SCRIPT_LOG_FILE";
-		screen -S $GAME_SERVER -p 0 -X stuff "$SHUTDOWN_ALERT_DISPLAY_COMMAND";
-		screen -S $GAME_SERVER -p 0 -X stuff "$SHUTDOWN_ALERT_PLAY_COMMAND";
+		if [[ "$SCREEN_RUNNING_CHECK" = true ]]; then
+			#
+			#	Displaying an in-game notification,
+			#	and an audible in-game alert ...
+			#
+			echo "Displaying in-game notification,";
+			echo "Displaying in-game notification," >> "$SCRIPT_LOG_FILE";
+			echo "and playing audible alert ...";
+			echo "and playing audible alert ..." >> "$SCRIPT_LOG_FILE";
+			screen -S $GAME_SERVER -p 0 -X stuff "$SHUTDOWN_ALERT_DISPLAY_COMMAND";
+			screen -S $GAME_SERVER -p 0 -X stuff "$SHUTDOWN_ALERT_PLAY_COMMAND";
+			#
+			#	Wait 60 seconds to allow the sound file
+			#	to complete playing in-game ...
+			#
+			echo "Allowing 60-sec for alert to play ...";
+			echo "Allowing 60-sec for alert to play ..." >> "$SCRIPT_LOG_FILE";
+			sleep 60s;
+			#
+			#	Stop any existing instance of this game-server ...
+			#
+			echo "Stopping any running background instance of this game server ... ";
+			echo "Stopping any running background instance of this game server ... " >> "$SCRIPT_LOG_FILE";
+			$STOP_SCRIPT;
+		fi;
 		#
-		#	Wait 60 seconds to allow the sound file
-		#	to complete playing in-game ...
+		#	Update content of this game-server ...
 		#
-		echo "Allowing 60-sec for alert to play ...";
-		echo "Allowing 60-sec for alert to play ..." >> "$SCRIPT_LOG_FILE";
-		sleep 60s;
-		#
-        #	Stop any existing instance of this game-server ...
-        #
-		echo "Stopping any running background instance of this game server ... ";
-		echo "Stopping any running background instance of this game server ... " >> "$SCRIPT_LOG_FILE";
-		$STOP_SCRIPT;
-        #
-        #	Update content of this game-server ...
-        #
 		echo "Update content of this game-server ... ";
 		echo "Update content of this game-server ... " >> "$SCRIPT_LOG_FILE";
 		$INSTALL_SCRIPT;
-        #
-        #	Restart this game-server ...
 		#
-		echo "Restart this game server ... ";
-		echo "Restart this game server ... " >> "$SCRIPT_LOG_FILE";
-		$START_SCRIPT;
+		#	ONLY if the related screen process is/was already running, ...
+		#
+		if [[ "$SCREEN_RUNNING_CHECK" = true ]]; then
+			#
+			#	Restart this game-server ...
+			#
+			echo "Restart this game server ... ";
+			echo "Restart this game server ... " >> "$SCRIPT_LOG_FILE";
+			$START_SCRIPT;
+		fi; 
 		#
 		#	Remove the temporary text file
 		#	used for update-check control ...
 		#
 		rm $CHECK_CONTROL_FILE;
-fi
+fi;
 #
 #	Display end of stuff ...
 #

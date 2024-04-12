@@ -1,10 +1,10 @@
 #!/bin/bash
 #
 #	----------------------------------------------------------------------------
-#	Check monitor a game-server's screen session for fatal conditions
+#	Monitor a game-server's screen session for various fatal conditions
 #	============================================================================
-#	Created:       2024-04-06, by Weasel.SteamID.155@gMail.com        
-#	Last modified: 2024-04-10, by Weasel.SteamID.155@gMail.com
+#	Created:	   2024-04-06, by Weasel.SteamID.155@gMail.com		
+#	Last modified: 2024-04-11, by Weasel.SteamID.155@gMail.com
 #	----------------------------------------------------------------------------
 #	Purpose:
 #	
@@ -22,30 +22,33 @@
 #			./monitor-game.sh gameserverid;
 #			
 #	NOTE: This technique might only work with games based on Valve's
-#	      older GoldSrc game-engine, such as: HL1, CS1, TFC, etc.
-#	      However, additional conditions may be added in the future
-#	      for any errors that are specific to Valve's not-quite-as-old
-#	      Source game-engine - used by games such as: TF2, CSS, etc.
+#		  older GoldSrc game-engine, such as: HL1, CS1, TFC, etc.
+#		  However, additional conditions may be added in the future
+#		  for any errors that are specific to Valve's not-quite-as-old
+#		  Source game-engine - used by games such as: TF2, CSS, etc.
 #	
 #	Process command-line parameters:
 #
 GAME_SERVER_TEMP=$1;
 GAME_SERVER=$(echo $GAME_SERVER_TEMP | tr -cd [0-9a-z]-);
-SCRIPT_DEBUG=false;		#	having this line un-commented disable debug mode (minimal messages displayed/logged).
-#SCRIPT_DEBUG=true;		#	having this line un-commented enables debug mode (more diagnostic messages displayed/logged).
+#
+#	Enable or disable debug mode ...
+#
+SCRIPT_DEBUG=false;		#	having this line un-commented DISABLES debug mode (minimal messages displayed/logged).
+#SCRIPT_DEBUG=true;		#	having this line un-commented ENABLES debug mode (more diagnostic messages displayed/logged).
 #
 #	Check that GAME_SERVER is only lower-case alpha-numeric ...
 #
 if [ "$GAME_SERVER" != "$GAME_SERVER_TEMP" ]; then
 	echo "ERROR: Only lower-case alpha-numeric charaters permitted in parameter: gameserverid";
-    exit 1;
+	exit 1;
 fi;
 #
 #	Check that GAME_SERVER has been provided ...
 #
 if ! [[ $GAME_SERVER ]]; then
 	echo "ERROR: Missing parameter: gameserverid";
-    exit 1;
+	exit 1;
 fi;
 #
 #	Define some additional variables ...
@@ -59,17 +62,24 @@ SCREEN_LOG_FILE="$LOGS_FOLDER/$GAME_SERVER-screen.log";			# screen output log fi
 #SCREEN_LOG_FILE="$SCRIPTS_FOLDER/monitor/example-screen-seg-fault.txt";	# Four troubleshooting using sample screen output log file.
 #SCREEN_LOG_FILE="$SCRIPTS_FOLDER/monitor/example-screen-fatal-error.txt";	# Four troubleshooting using sample screen output log file.
 TAIL_COMMAND="tail -n 1 $SCREEN_LOG_FILE";						# tail command to retreive last line(s) of screen log file.
+DATESERIAL_LOG=$(date +%s -r $SCREEN_LOG_FILE);					# the date/time (in "seconds since epoch" format) of last log file change.
+DATESERIAL_CURRENT=$(date +%s);									# the current date/time (in "seconds since epoch" format).
+DATESERIAL_SECONDS=$(($DATESERIAL_CURRENT-$DATESERIAL_LOG));	# difference (in seconds) between now and last log file change.
+DATESERIAL_MINUTES=$(($DATESERIAL_SECONDS/60));					# difference (in minutes) between now and last log file change.
+DATESERIAL_THRESHOLD=900;										# the threshold (in seconds) to determin if a server restart should be initiatied.
 #
-#	Display and log start of stuff ...
+#	If debug is on, display and log start of stuff ...
 #
-echo "[Start of script: ${0##*/}]";
-echo "[Start of script: ${0##*/}]" >> $SCRIPT_LOG_FILE;
-echo "";
-echo "" >> $SCRIPT_LOG_FILE;
-date;
-date >> $SCRIPT_LOG_FILE;
+if [ "$SCRIPT_DEBUG" = true ]; then
+	echo "[Start of script: ${0##*/}]";
+	echo "[Start of script: ${0##*/}]" >> $SCRIPT_LOG_FILE;
+	echo "";
+	echo "" >> $SCRIPT_LOG_FILE;
+	date;
+	date >> $SCRIPT_LOG_FILE;
+fi;
 #
-#	Display and log various information ...
+#	If debug is on, display and log various information ...
 #
 if [ "$SCRIPT_DEBUG" = true ]; then
 	echo "";
@@ -84,6 +94,16 @@ if [ "$SCRIPT_DEBUG" = true ]; then
 	echo "Screen log-file to examine: $SCREEN_LOG_FILE" >> $SCRIPT_LOG_FILE;
 	echo "Tail command to use: $TAIL_COMMAND";
 	echo "Tail command to use: $TAIL_COMMAND" >> $SCRIPT_LOG_FILE;
+   	echo "Date/Time serial (current): $DATESERIAL_CURRENT";
+	echo "Date/Time serial (current): $DATESERIAL_CURRENT" >> $SCRIPT_LOG_FILE;
+	echo "Date/Time serial (screen log file): $DATESERIAL_LOG";
+	echo "Date/Time serial (screen log file): $DATESERIAL_LOG" >> $SCRIPT_LOG_FILE;
+	echo "Date/Time serial difference (seconds): $DATESERIAL_SECONDS";
+	echo "Date/Time serial difference (seconds): $DATESERIAL_SECONDS" >> $SCRIPT_LOG_FILE;
+	echo "Date/Time serial difference (minutes): $DATESERIAL_MINUTES";
+	echo "Date/Time serial difference (minutes): $DATESERIAL_MINUTES" >> $SCRIPT_LOG_FILE;
+	echo "Date/Time serial threshold (seconds): $DATESERIAL_THRESHOLD";
+	echo "Date/Time serial threshold (seconds): $DATESERIAL_THRESHOLD" >> $SCRIPT_LOG_FILE;
 fi;
 #
 #	Use 'tail' utility to check the last line(s) of the screen log file for fatal conditions ...
@@ -92,7 +112,7 @@ TAIL_OUTPUT=$($TAIL_COMMAND);
 TAIL_OUTPUT_SEG_FAULT_CHECK=$(echo $TAIL_OUTPUT | grep "^Segmentation fault");
 TAIL_OUTPUT_FATAL_ERROR_CHECK=$(echo $TAIL_OUTPUT | grep "^FATAL ERROR");
 #
-#	Output that last line for troubleshooting purposes ...
+#	If debug is on, display and log that last line for troubleshooting purposes ...
 #
 if [ "$SCRIPT_DEBUG" = true ]; then
 	echo "Output of Tail utility to get last line(s) of screen log file ...";
@@ -117,45 +137,110 @@ if [ "$SCRIPT_DEBUG" = true ]; then
 	echo "" >> $SCRIPT_LOG_FILE;
 fi;
 #
-#	Determine in a fatal condition is noted in the tail output ...
+#	Check if related screen process is even running ...
 #
-#	...	if seg-fault it detected ...
-#
-if [[ $TAIL_OUTPUT_SEG_FAULT_CHECK ]]; then
-	#
-    #	Display and log a warning ...
-    #
-	echo "WARNING: Segmention Fault (Seg-Fault) detected!";
-    echo "WARNING: Segmention Fault (Seg-Fault) detected!" >> $SCRIPT_LOG_FILE;
-	#
-	#	Restart this game-server ...
-	#
-	echo "Restarting this game server ... ";
-	echo "Restarting this game server ... " >> "$SCRIPT_LOG_FILE";
-	$START_SCRIPT;
+SCREEN_LIST_CAPTURE=$(screen -ls | grep $GAME_SERVER);
+if [[ $SCREEN_LIST_CAPTURE == *"$GAME_SERVER"* ]]; then
+	SCREEN_RUNNING_CHECK=true;
+else
+	SCREEN_RUNNING_CHECK=false;
 fi;
 #
-#	...	if seg-fault it detected ...
+#	If debug is on, display and log stuff ...
 #
-if [[ $TAIL_OUTPUT_FATAL_ERROR_CHECK ]]; then
-	#
-    #	Display and log a warning ...
-    #
-	echo "WARNING: Fatal Error detected!";
-    echo "WARNING: Fatal Error detected!" >> $SCRIPT_LOG_FILE;
-    #
-	#	Restart this game-server ...
-	#
-	echo "Restarting this game server ... ";
-	echo "Restarting this game server ... " >> "$SCRIPT_LOG_FILE";
-	$START_SCRIPT;
+if [ "$SCRIPT_DEBUG" = true ]; then
+	echo "Screen running list search capture:";
+	echo "Screen running list search capture:" >> $SCRIPT_LOG_FILE;
+	echo "$SCREEN_LIST_CAPTURE";
+	echo "$SCREEN_LIST_CAPTURE" >> $SCRIPT_LOG_FILE;
+	echo "Is related screen process running?: $SCREEN_RUNNING_CHECK";
+	echo "Is related screen process running?: $SCREEN_RUNNING_CHECK" >> $SCRIPT_LOG_FILE;
 fi;
 #
-#	Display end of stuff ...
+#	ONLY if the related screen process is running, check for various fatal conditions ...
 #
-date;
-date >> $SCRIPT_LOG_FILE;
-echo "";
-echo "" >> $SCRIPT_LOG_FILE;
-echo "[End of script: ${0##*/}]";
-echo "[End of script: ${0##*/}]" >> $SCRIPT_LOG_FILE;
+if [[ "$SCREEN_RUNNING_CHECK" = true ]]; then
+	#
+	#	...	if a seg-fault it detected ...
+	#
+	if [[ $TAIL_OUTPUT_SEG_FAULT_CHECK ]]; then
+		#
+		#	Display and log a warning ...
+		#
+		echo "[Start of detection by script: ${0##*/}]";
+		echo "[Start of detection by script: ${0##*/}]" >> $SCRIPT_LOG_FILE;
+		date;
+		date >> $SCRIPT_LOG_FILE;
+		echo "WARNING: Segmention Fault (Seg-Fault) detected!";
+		echo "WARNING: Segmention Fault (Seg-Fault) detected!" >> $SCRIPT_LOG_FILE;
+		#
+		#	Restart this game-server ...
+		#
+		echo "Restarting this game server ... ";
+		echo "Restarting this game server ... " >> "$SCRIPT_LOG_FILE";
+		$START_SCRIPT;
+		date;
+		date >> $SCRIPT_LOG_FILE;
+		echo "[End of detection by script: ${0##*/}]";
+		echo "[End of detection by script: ${0##*/}]" >> $SCRIPT_LOG_FILE;
+	fi;
+	#
+	#	...	if a fatal-error is detected ...
+	#
+	if [[ $TAIL_OUTPUT_FATAL_ERROR_CHECK ]]; then
+		#
+		#	Display and log a warning ...
+		#
+		echo "[Start of detection by script: ${0##*/}]";
+		echo "[Start of detection by script: ${0##*/}]" >> $SCRIPT_LOG_FILE;
+		date;
+		date >> $SCRIPT_LOG_FILE;
+		echo "WARNING: Fatal Error detected!";
+		echo "WARNING: Fatal Error detected!" >> $SCRIPT_LOG_FILE;
+		#
+		#	Restart this game-server ...
+		#
+		echo "Restarting this game server ... ";
+		echo "Restarting this game server ... " >> "$SCRIPT_LOG_FILE";
+		$START_SCRIPT;
+		date;
+		date >> $SCRIPT_LOG_FILE;
+		echo "[End of detection by script: ${0##*/}]";
+		echo "[End of detection by script: ${0##*/}]" >> $SCRIPT_LOG_FILE;
+	fi;
+	#
+	#	... then check to see if there is recent screen log-file output ...
+	#
+	if [[ $DATESERIAL_SECONDS -gt $DATESERIAL_THRESHOLD ]]; then
+		#
+		#	Display and log a warning ...
+		#
+		echo "[Start of detection by script: ${0##*/}]";
+		echo "[Start of detection by script: ${0##*/}]" >> $SCRIPT_LOG_FILE;
+		date;
+		date >> $SCRIPT_LOG_FILE;
+		echo "WARNING: Stale log-file detected!";
+		echo "WARNING: Stale log-file detected!" >> $SCRIPT_LOG_FILE;
+		#
+		#	Restart this game-server ...
+		#
+		echo "Restarting this game server ... ";
+		echo "Restarting this game server ... " >> "$SCRIPT_LOG_FILE";
+		$START_SCRIPT;
+		date;
+		date >> $SCRIPT_LOG_FILE;
+		echo "[End of detection by script: ${0##*/}]";
+		echo "[End of detection by script: ${0##*/}]" >> $SCRIPT_LOG_FILE;
+	fi;
+fi;
+#
+#	If debug is on, display end of stuff ...
+#
+if [ "$SCRIPT_DEBUG" = true ]; then
+	date;
+	date >> $SCRIPT_LOG_FILE;
+	echo "";
+	echo "" >> $SCRIPT_LOG_FILE;
+	echo "[End of script: ${0##*/}]";
+	echo "[End of script: ${0##*/}]" >> $SCRIPT_LOG_FILE;
+fi;
