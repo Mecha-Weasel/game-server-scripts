@@ -33,3 +33,14 @@ The full "Guide", for how to implement these scripts is available on Steam, here
 
 Weasel's Dedicated-Server Management Scripts (for Linux)
 https://steamcommunity.com/sharedfiles/filedetails/?id=3192671225
+
+Example Virtual Machine:
+-----------------------
+
+An example virtual machine (available in both [VirtualBox](https://www.virtualbox.org/wiki/Downloads) and [VMware Player](https://en.wikipedia.org/wiki/VMware_Workstation_Player) formats), that includes these scripts may be downloaded via DropBox or BitTorrent:
+- [DropBox](https://www.dropbox.com/sh/26x2qoxt9koynxv/AAB59xue-IEnIeJ9Of6imlqMa?dl=0) <-- Check here for the lastest version(s).
+- [ExampleVPS-2024b-VirtualBox-20240413a.7z.torrent](https://www.dropbox.com/scl/fi/h97jvnws3fx98yu7jafdb/ExampleVPS-2024b-VirtualBox-20240413a.7z.torrent?rlkey=akpmgnw273zb1igr7ckcqucr7&dl=1)
+- [ExampleVPS-2024b-VMware-20240414a.7z.torrent](https://www.dropbox.com/scl/fi/sfbhnrh3jzzdko7674e6j/ExampleVPS-2024b-VMware-20240414a.7z.torrent?rlkey=ibldj0fndhu23jtezn5hd8dgf&dl=1)
+
+
+
