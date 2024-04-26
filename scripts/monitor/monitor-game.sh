@@ -4,7 +4,7 @@
 #	Monitor a game-server's screen session for various fatal conditions
 #	============================================================================
 #	Created:	   2024-04-06, by Weasel.SteamID.155@gMail.com		
-#	Last modified: 2024-04-11, by Weasel.SteamID.155@gMail.com
+#	Last modified: 2024-04-25, by Weasel.SteamID.155@gMail.com
 #	----------------------------------------------------------------------------
 #	Purpose:
 #	
@@ -13,29 +13,36 @@
 #
 #	Usage / command-line parameters:
 #	
-#	gameserverid
+#	gameserverid (mandatory!)
 #	
 #		The game-server name/ID that will be checked.
 #		
-#		Example:
+#	check-for-stale-logging? (optional!)
+#	
+#		Should be 'true' or 'false' (or blank, which is assumed to be 'true')
+#		
+#		Examples:
 #		
 #			./monitor-game.sh gameserverid;
+#			./monitor-game.sh gameserverid true;
+#			./monitor-game.sh gameserverid false;
 #			
 #	NOTE: This technique might only work with games based on Valve's
 #		  older GoldSrc game-engine, such as: HL1, CS1, TFC, etc.
 #		  However, additional conditions may be added in the future
 #		  for any errors that are specific to Valve's not-quite-as-old
 #		  Source game-engine - used by games such as: TF2, CSS, etc.
+#		  
+#	Enable or disable debug mode ...
+#
+SCRIPT_DEBUG=false;		#	having this line un-commented DISABLES debug mode (minimal messages displayed/logged).
+#SCRIPT_DEBUG=true;		#	having this line un-commented ENABLES debug mode (more diagnostic messages displayed/logged).
 #	
 #	Process command-line parameters:
 #
 GAME_SERVER_TEMP=$1;
 GAME_SERVER=$(echo $GAME_SERVER_TEMP | tr -cd [0-9a-z]-);
-#
-#	Enable or disable debug mode ...
-#
-SCRIPT_DEBUG=false;		#	having this line un-commented DISABLES debug mode (minimal messages displayed/logged).
-#SCRIPT_DEBUG=true;		#	having this line un-commented ENABLES debug mode (more diagnostic messages displayed/logged).
+MONITOR_FOR_STALE=$2;
 #
 #	Check that GAME_SERVER is only lower-case alpha-numeric ...
 #
@@ -49,6 +56,31 @@ fi;
 if ! [[ $GAME_SERVER ]]; then
 	echo "ERROR: Missing parameter: gameserverid";
 	exit 1;
+fi;
+#
+#	Validate that MONITOR_FOR_STALE is true or false (or blank = true) ...
+#
+if ! [[ $MONITOR_FOR_STALE ]]; then
+		#
+		#	If no value was passed, assume true ...
+		#
+		MONITOR_FOR_STALE=true; 
+	else
+		#
+	    #	If a valude was passed, evanualte it for validity ...
+	    #
+		case $MONITOR_FOR_STALE in
+			true | True | TRUE)
+            	MONITOR_FOR_STALE=true; 
+            	;;
+			false | False | FALSE)
+           		MONITOR_FOR_STALE=false; 
+            	;;            
+            *)
+            	echo "ERROR: 'true' or 'false' (or blank) may be used for second parameter.";
+				exit 1;
+				;;
+		esac        
 fi;
 #
 #	Define some additional variables ...
@@ -66,7 +98,8 @@ DATESERIAL_LOG=$(date +%s -r $SCREEN_LOG_FILE);					# the date/time (in "seconds
 DATESERIAL_CURRENT=$(date +%s);									# the current date/time (in "seconds since epoch" format).
 DATESERIAL_SECONDS=$(($DATESERIAL_CURRENT-$DATESERIAL_LOG));	# difference (in seconds) between now and last log file change.
 DATESERIAL_MINUTES=$(($DATESERIAL_SECONDS/60));					# difference (in minutes) between now and last log file change.
-DATESERIAL_THRESHOLD=900;										# the threshold (in seconds) to determin if a server restart should be initiatied.
+#DATESERIAL_THRESHOLD=300;										# the threshold (in seconds) to determine if a server restart should be initiatied.
+DATESERIAL_THRESHOLD=900;										# the threshold (in seconds) to determine if a server restart should be initiatied.
 #
 #	If debug is on, display and log start of stuff ...
 #
@@ -84,6 +117,10 @@ fi;
 if [ "$SCRIPT_DEBUG" = true ]; then
 	echo "";
 	echo "" >> $SCRIPT_LOG_FILE;
+    echo "Script debugging messages?: $SCRIPT_DEBUG";
+    echo "Script debugging messages?: $SCRIPT_DEBUG" >> $SCRIPT_LOG_FILE;
+    echo "Monitor for stale 'screen' logging?: $MONITOR_FOR_STALE";
+    echo "Monitor for stale 'screen' logging?: $MONITOR_FOR_STALE" >> $SCRIPT_LOG_FILE;
 	echo "Information used for this update-check includes: ...";
 	echo "Information used for this update-check includes: ..." >> $SCRIPT_LOG_FILE;
 	echo "Stop script to use: $STOP_SCRIPT";
@@ -182,8 +219,20 @@ if [[ "$SCREEN_RUNNING_CHECK" = true ]]; then
 		date;
 		date >> $SCRIPT_LOG_FILE;
 		echo "[End of detection by script: ${0##*/}]";
-		echo "[End of detection by script: ${0##*/}]" >> $SCRIPT_LOG_FILE;
-	fi;
+		echo "[End of detection by script: ${0##*/}]" >> $SCRIPT_LOG_FILE;    
+        #
+		#	If debug is on, display end of stuff ...
+		#
+		if [ "$SCRIPT_DEBUG" = true ]; then
+			date;
+			date >> $SCRIPT_LOG_FILE;
+			echo "";
+			echo "" >> $SCRIPT_LOG_FILE;
+			echo "[End of script: ${0##*/}]";
+			echo "[End of script: ${0##*/}]" >> $SCRIPT_LOG_FILE;
+		fi;
+        exit;
+ 	fi;
 	#
 	#	...	if a fatal-error is detected ...
 	#
@@ -207,6 +256,17 @@ if [[ "$SCREEN_RUNNING_CHECK" = true ]]; then
 		date >> $SCRIPT_LOG_FILE;
 		echo "[End of detection by script: ${0##*/}]";
 		echo "[End of detection by script: ${0##*/}]" >> $SCRIPT_LOG_FILE;
+        #
+		#	If debug is on, display end of stuff ...
+		#
+		if [ "$SCRIPT_DEBUG" = true ]; then
+			date;
+			date >> $SCRIPT_LOG_FILE;
+			echo "";
+			echo "" >> $SCRIPT_LOG_FILE;
+			echo "[End of script: ${0##*/}]";
+			echo "[End of script: ${0##*/}]" >> $SCRIPT_LOG_FILE;
+		fi;
 	fi;
 	#
 	#	... then check to see if there is recent screen log-file output ...
@@ -231,16 +291,16 @@ if [[ "$SCREEN_RUNNING_CHECK" = true ]]; then
 		date >> $SCRIPT_LOG_FILE;
 		echo "[End of detection by script: ${0##*/}]";
 		echo "[End of detection by script: ${0##*/}]" >> $SCRIPT_LOG_FILE;
+        #
+		#	If debug is on, display end of stuff ...
+		#
+		if [ "$SCRIPT_DEBUG" = true ]; then
+			date;
+			date >> $SCRIPT_LOG_FILE;
+			echo "";
+			echo "" >> $SCRIPT_LOG_FILE;
+			echo "[End of script: ${0##*/}]";
+			echo "[End of script: ${0##*/}]" >> $SCRIPT_LOG_FILE;
+		fi;
 	fi;
-fi;
-#
-#	If debug is on, display end of stuff ...
-#
-if [ "$SCRIPT_DEBUG" = true ]; then
-	date;
-	date >> $SCRIPT_LOG_FILE;
-	echo "";
-	echo "" >> $SCRIPT_LOG_FILE;
-	echo "[End of script: ${0##*/}]";
-	echo "[End of script: ${0##*/}]" >> $SCRIPT_LOG_FILE;
 fi;
