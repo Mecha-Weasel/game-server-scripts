@@ -4,7 +4,7 @@
 #	Monitor a game-server's screen session for various fatal conditions
 #	============================================================================
 #	Created:	   2024-04-06, by Weasel.SteamID.155@gMail.com		
-#	Last modified: 2024-04-25, by Weasel.SteamID.155@gMail.com
+#	Last modified: 2024-05-01, by Weasel.SteamID.155@gMail.com
 #	----------------------------------------------------------------------------
 #	Purpose:
 #	
@@ -267,7 +267,8 @@ if [[ "$SCREEN_RUNNING_CHECK" = true ]]; then
 			echo "[End of script: ${0##*/}]";
 			echo "[End of script: ${0##*/}]" >> $SCRIPT_LOG_FILE;
 		fi;
-	fi;
+        exit;
+ 	fi;
 	#
 	#	... then check to see if there is recent screen log-file output ...
 	#
@@ -302,5 +303,6 @@ if [[ "$SCREEN_RUNNING_CHECK" = true ]]; then
 			echo "[End of script: ${0##*/}]";
 			echo "[End of script: ${0##*/}]" >> $SCRIPT_LOG_FILE;
 		fi;
-	fi;
+        exit;
+ 	fi;
 fi;
