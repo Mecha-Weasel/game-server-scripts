@@ -1,4 +1,4 @@
-Weasel's Dedicated-Server Management Scripts, (for Linux) - v1
+Weasel's Dedicated-Server Management Scripts (for Linux) - v1
 ========================================================
 https://steamcommunity.com/sharedfiles/filedetails/?id=3192671225
 
