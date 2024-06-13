@@ -9,12 +9,10 @@ OBSOLETE:
 See the NEW system (and guide) instead!!!!
 
 New (v2) guide on Steam:
-Weasel's Game-Administrator / Server-Manager (wGASM), for Linux - v2
-https://steamcommunity.com/sharedfiles/filedetails/?id=3259278773
+Weasel's Game-Administrator / Server-Manager (wGASM), for Linux - v2: https://steamcommunity.com/sharedfiles/filedetails/?id=3259278773
 
 New (v2) content on GitHub:
-Weasel's Game-Administrator / Server-Manager (wGASM), for Linux - v2
-https://github.com/Mecha-Weasel/wgasm
+Weasel's Game-Administrator / Server-Manager (wGASM), for Linux - v2: https://github.com/Mecha-Weasel/wgasm
 
 
 About the Scripts:
