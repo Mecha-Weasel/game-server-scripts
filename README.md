@@ -5,16 +5,16 @@ https://steamcommunity.com/sharedfiles/filedetails/?id=3192671225
 OBSOLETE:
 --------
 
---- !!! Do NOT use !!! ---
+!!! Do NOT use !!!
 See the NEW system (and guide) instead!!!!
 
 New (v2) guide on Steam:
 Weasel's Game-Administrator / Server-Manager (wGASM), for Linux - v2
-[url=https://steamcommunity.com/sharedfiles/filedetails/?id=3259278773
+https://steamcommunity.com/sharedfiles/filedetails/?id=3259278773
 
 New (v2) content on GitHub:
 Weasel's Game-Administrator / Server-Manager (wGASM), for Linux - v2
-[url=https://github.com/Mecha-Weasel/wgasm
+https://github.com/Mecha-Weasel/wgasm
 
 
 About the Scripts:
